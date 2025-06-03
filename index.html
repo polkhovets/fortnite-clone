@@ -1,16 +1,27 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://unpkg.com; script-src 'self' https://unpkg.com 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';">
     <title>Fortnite-Style Game</title>
     <style>
-        body { margin: 0; }
-        canvas { display: block; }
+        body { 
+            margin: 0; 
+            padding: 0;
+            overflow: hidden;
+        }
+        canvas { 
+            display: block; 
+        }
         #ui {
             position: fixed;
             top: 10px;
             left: 10px;
             color: white;
             font-family: Arial, sans-serif;
+            z-index: 100;
+            pointer-events: none;
         }
         #resources {
             position: fixed;
@@ -18,19 +29,28 @@
             right: 10px;
             color: white;
             font-family: Arial, sans-serif;
+            z-index: 100;
+            pointer-events: none;
+        }
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
         }
     </style>
 </head>
 <body>
-    <div id="ui">
-        <div>Health: <span id="health">100</span></div>
-        <div>Score: <span id="score">0</span></div>
+    <div id="gameContainer">
+        <div id="ui">
+            <div id="healthDisplay">Health: <span id="health">100</span></div>
+            <div id="scoreDisplay">Score: <span id="score">0</span></div>
+        </div>
+        <div id="resources">
+            <div id="woodDisplay">Wood: <span id="wood">0</span></div>
+            <div id="stoneDisplay">Stone: <span id="stone">0</span></div>
+            <div id="metalDisplay">Metal: <span id="metal">0</span></div>
+        </div>
     </div>
-    <div id="resources">
-        <div>Wood: <span id="wood">0</span></div>
-        <div>Stone: <span id="stone">0</span></div>
-        <div>Metal: <span id="metal">0</span></div>
-    </div>
-    <script type="module" src="js/game.js"></script>
+    <script type="module" src="game.js"></script>
 </body>
 </html> 

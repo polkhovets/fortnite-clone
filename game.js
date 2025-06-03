@@ -6,9 +6,17 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87ceeb); // Add sky blue background
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const renderer = new THREE.WebGLRenderer({ 
+    antialias: true,
+    powerPreference: "high-performance",
+    alpha: false
+});
 renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
+renderer.setPixelRatio(window.devicePixelRatio);
+
+// Add renderer to game container
+const gameContainer = document.getElementById('gameContainer');
+gameContainer.appendChild(renderer.domElement);
 
 // Lighting
 const light = new THREE.AmbientLight(0xffffff, 0.5);
@@ -29,83 +37,84 @@ ground.rotation.x = -Math.PI / 2;
 scene.add(ground);
 
 // Player controls
-const controls = new PointerLockControls(camera, document.body);
+const controls = new PointerLockControls(camera, gameContainer);
 camera.position.y = 2;
 
 // Instructions
 const blocker = document.createElement('div');
-blocker.style.position = 'absolute';
-blocker.style.width = '100%';
-blocker.style.height = '100%';
-blocker.style.backgroundColor = 'rgba(0,0,0,0.5)';
-blocker.style.display = 'flex';
-blocker.style.justifyContent = 'center';
-blocker.style.alignItems = 'center';
-blocker.style.color = 'white';
-blocker.style.fontSize = '24px';
-blocker.innerHTML = 'Click to play<br>WASD = Move<br>MOUSE = Look around<br>ESC = Pause';
-document.body.appendChild(blocker);
+blocker.id = 'blocker';
+Object.assign(blocker.style, {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    color: 'white',
+    fontSize: '24px',
+    fontFamily: 'Arial, sans-serif',
+    textAlign: 'center',
+    userSelect: 'none',
+    cursor: 'pointer',
+    zIndex: '1000'
+});
+
+const instructions = document.createElement('div');
+instructions.id = 'instructions';
+instructions.innerHTML = `
+    <p>Click to play</p>
+    <p>WASD = Move</p>
+    <p>MOUSE = Look around</p>
+    <p>ESC = Pause</p>
+`;
+blocker.appendChild(instructions);
+gameContainer.appendChild(blocker);
 
 // Click to start
-blocker.addEventListener('click', function() {
+blocker.addEventListener('click', () => {
     controls.lock();
 });
 
-controls.addEventListener('lock', function() {
+controls.addEventListener('lock', () => {
     blocker.style.display = 'none';
 });
 
-controls.addEventListener('unlock', function() {
+controls.addEventListener('unlock', () => {
     blocker.style.display = 'flex';
 });
 
 // Movement
-let moveForward = false;
-let moveBackward = false;
-let moveLeft = false;
-let moveRight = false;
+const moveState = {
+    forward: false,
+    backward: false,
+    left: false,
+    right: false
+};
 
-document.addEventListener('keydown', (event) => {
+const handleKeyEvent = (event, isKeyDown) => {
     switch (event.code) {
         case 'ArrowUp':
         case 'KeyW':
-            moveForward = true;
+            moveState.forward = isKeyDown;
             break;
         case 'ArrowDown':
         case 'KeyS':
-            moveBackward = true;
+            moveState.backward = isKeyDown;
             break;
         case 'ArrowLeft':
         case 'KeyA':
-            moveLeft = true;
+            moveState.left = isKeyDown;
             break;
         case 'ArrowRight':
         case 'KeyD':
-            moveRight = true;
+            moveState.right = isKeyDown;
             break;
     }
-});
+};
 
-document.addEventListener('keyup', (event) => {
-    switch (event.code) {
-        case 'ArrowUp':
-        case 'KeyW':
-            moveForward = false;
-            break;
-        case 'ArrowDown':
-        case 'KeyS':
-            moveBackward = false;
-            break;
-        case 'ArrowLeft':
-        case 'KeyA':
-            moveLeft = false;
-            break;
-        case 'ArrowRight':
-        case 'KeyD':
-            moveRight = false;
-            break;
-    }
-});
+document.addEventListener('keydown', (event) => handleKeyEvent(event, true));
+document.addEventListener('keyup', (event) => handleKeyEvent(event, false));
 
 // Animation loop
 const velocity = new THREE.Vector3();
@@ -116,12 +125,12 @@ function animate() {
     requestAnimationFrame(animate);
 
     if (controls.isLocked) {
-        direction.z = Number(moveForward) - Number(moveBackward);
-        direction.x = Number(moveRight) - Number(moveLeft);
+        direction.z = Number(moveState.forward) - Number(moveState.backward);
+        direction.x = Number(moveState.right) - Number(moveState.left);
         direction.normalize();
 
-        if (moveForward || moveBackward) velocity.z -= direction.z * speed;
-        if (moveLeft || moveRight) velocity.x -= direction.x * speed;
+        if (moveState.forward || moveState.backward) velocity.z -= direction.z * speed;
+        if (moveState.left || moveState.right) velocity.x -= direction.x * speed;
 
         controls.moveRight(-velocity.x);
         controls.moveForward(-velocity.z);
@@ -136,10 +145,10 @@ function animate() {
 animate();
 
 // Handle window resizing
-window.addEventListener('resize', onWindowResize, false);
-
-function onWindowResize() {
+const onWindowResize = () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
-} 
+};
+
+window.addEventListener('resize', onWindowResize, false); 
