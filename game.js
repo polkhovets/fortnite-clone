@@ -1,23 +1,29 @@
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.module.js';
-import { PointerLockControls } from 'https://cdn.jsdelivr.net/npm/three@0.132.2/examples/jsm/controls/PointerLockControls.js';
+import * as THREE from 'https://unpkg.com/three@0.132.2/build/three.module.js';
+import { PointerLockControls } from 'https://unpkg.com/three@0.132.2/examples/jsm/controls/PointerLockControls.js';
 
 // Scene setup
 const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x87ceeb); // Add sky blue background
+
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer();
+const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 // Lighting
 const light = new THREE.AmbientLight(0xffffff, 0.5);
 scene.add(light);
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
 directionalLight.position.set(0, 1, 0);
 scene.add(directionalLight);
 
 // Ground
 const groundGeometry = new THREE.PlaneGeometry(100, 100);
-const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x88ff88 });
+const groundMaterial = new THREE.MeshStandardMaterial({ 
+    color: 0x88ff88,
+    roughness: 0.8,
+    metalness: 0.2
+});
 const ground = new THREE.Mesh(groundGeometry, groundMaterial);
 ground.rotation.x = -Math.PI / 2;
 scene.add(ground);
@@ -26,9 +32,31 @@ scene.add(ground);
 const controls = new PointerLockControls(camera, document.body);
 camera.position.y = 2;
 
+// Instructions
+const blocker = document.createElement('div');
+blocker.style.position = 'absolute';
+blocker.style.width = '100%';
+blocker.style.height = '100%';
+blocker.style.backgroundColor = 'rgba(0,0,0,0.5)';
+blocker.style.display = 'flex';
+blocker.style.justifyContent = 'center';
+blocker.style.alignItems = 'center';
+blocker.style.color = 'white';
+blocker.style.fontSize = '24px';
+blocker.innerHTML = 'Click to play<br>WASD = Move<br>MOUSE = Look around<br>ESC = Pause';
+document.body.appendChild(blocker);
+
 // Click to start
-document.addEventListener('click', function() {
+blocker.addEventListener('click', function() {
     controls.lock();
+});
+
+controls.addEventListener('lock', function() {
+    blocker.style.display = 'none';
+});
+
+controls.addEventListener('unlock', function() {
+    blocker.style.display = 'flex';
 });
 
 // Movement
